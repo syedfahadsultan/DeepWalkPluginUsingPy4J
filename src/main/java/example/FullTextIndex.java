@@ -11,10 +11,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.logging.Log;
-import org.neo4j.procedure.Context;
-import org.neo4j.procedure.Name;
-import org.neo4j.procedure.PerformsWrites;
-import org.neo4j.procedure.Procedure;
+import org.neo4j.procedure.*;
 
 import static org.neo4j.helpers.collection.MapUtil.stringMap;
 
@@ -73,8 +70,9 @@ public class FullTextIndex
      *              documentation for full available syntax.
      * @return the nodes found by the query
      */
-    @Procedure("example.search")
-    @PerformsWrites // TODO: This is here as a workaround, because index().forNodes() is not read-only
+    // TODO: This is here as a workaround, because index().forNodes() is not read-only
+    @Procedure(value = "example.search", mode = Mode.WRITE)
+    @Description("Execute lucene query in the given index, return found nodes")
     public Stream<SearchHit> search( @Name("label") String label,
                                      @Name("query") String query )
     {
@@ -105,7 +103,7 @@ public class FullTextIndex
      * the current state of the node.
      *
      * This procedure works largely the same as {@link #search(String, String)},
-     * with two notable differences. One, it is annotated with {@link PerformsWrites},
+     * with two notable differences. One, it is annotated with {@link Mode}.WRITE,
      * which is <i>required</i> if you want to perform updates to the graph in your
      * procedure.
      *
@@ -116,8 +114,8 @@ public class FullTextIndex
      * @param propKeys a list of property keys to index, only the ones the node
      *                 actually contains will be added
      */
-    @Procedure("example.index")
-    @PerformsWrites
+    @Procedure(value = "example.index", mode=Mode.WRITE)
+    @Description("For the node with the given node-id, add properties for the provided keys to index per label")
     public void index( @Name("nodeId") long nodeId,
                        @Name("properties") List<String> propKeys )
     {
