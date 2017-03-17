@@ -114,7 +114,7 @@ public class FullTextIndex
      * @param propKeys a list of property keys to index, only the ones the node
      *                 actually contains will be added
      */
-    @Procedure(value = "example.index", mode=Mode.WRITE)
+    @Procedure(value = "example.index", mode=Mode.SCHEMA)
     @Description("For the node with the given node-id, add properties for the provided keys to index per label")
     public void index( @Name("nodeId") long nodeId,
                        @Name("properties") List<String> propKeys )
