@@ -2,7 +2,7 @@
 = Instructions: 
 
 1. Clone and install Deepwalk (https://github.com/phanein/deepwalk) as per instructions in its README 
-2. Add path to deepwalk repo in Neo4j Desktop as DEEPWALK
-3. Add to Settings in Neo4j desktop:
+2. Add path to deepwalk repo in Neo4j Desktop settings as DEEPWALK
+3. Further add to Settings in Neo4j desktop:
 i) dbms.security.functions.whitelist=example.* ii) dbms.security.procedures.whitelist=example.* iii) dbms.security.procedures.unrestricted=example.*
-4. CALL example.deepWalk();
+4. Cypher query: CALL example.deepWalk();
