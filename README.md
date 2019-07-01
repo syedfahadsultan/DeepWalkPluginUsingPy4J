@@ -1,5 +1,5 @@
 
-= Instructions: 
+## Instructions
 
 1. Install [Anaconda](https://docs.anaconda.com/anaconda/install/)
 2. Download [deepwalk.yml](https://github.com/syedfahadsultan/DeepwalkPluginForNeo/blob/3.5/deepwalk.yml)
