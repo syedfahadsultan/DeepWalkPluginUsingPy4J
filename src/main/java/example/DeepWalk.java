@@ -15,6 +15,7 @@ import java.io.*;
 import java.lang.InterruptedException;
 import java.lang.Long;
 
+
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
@@ -72,34 +73,70 @@ public class DeepWalk
         return true;
     }
 
-	private int learnEmbeddings(String path, String deepwalkPath) throws IOException, InterruptedException{
-		log.info("Deepwalk: Calling bash command for deepwalk ");
-    	String toreturn = "";
-    	String s = "";
-    	List<String[]> emb = null;
+    private int callBashCommand(String[] bashCommand) throws IOException, InterruptedException{
+        String s = "";
+        Process process = Runtime.getRuntime().exec(bashCommand);
 
-    	String[] bashCommand = new String[]{
-            deepwalkPath,
-    		"--format", "edgelist",
-            "--input", path+"/data/tmp.csv", 
-            "--output", path+"/data/tmp.embeddings"
-    	};
+        BufferedReader reader = new BufferedReader(new InputStreamReader(        
+            process.getInputStream()));                                          
+        while ((s = reader.readLine()) != null) {                                
+          log.info("Deepwalk: "+ s);
+        }  
 
-	    Process process = Runtime.getRuntime().exec(bashCommand);
+        BufferedReader errReader = new BufferedReader(new InputStreamReader(        
+            process.getErrorStream()));                                          
+        while ((s = errReader.readLine()) != null) {
+            log.info("Deepwalk-ERR: "+ s);
+        }
+        int exitVal = process.waitFor();
+        return exitVal;
+    }
 
-	    BufferedReader reader = new BufferedReader(new InputStreamReader(        
-	        process.getInputStream()));                                          
-	    while ((s = reader.readLine()) != null) {                                
-	      log.info("Deepwalk: "+ s);
-	    }  
+	private int learnEmbeddings(String path, String condaPath) throws IOException, InterruptedException{
+        try{
+    		log.info("Deepwalk: Calling bash command for deepwalk ");
+        	
+            // callBashCommand(["source", "activate", "deepwalk"]);
 
-	    BufferedReader errReader = new BufferedReader(new InputStreamReader(        
-	        process.getErrorStream()));                                          
-	    while ((s = errReader.readLine()) != null) {
-	    	log.info("Deepwalk-ERR: "+ s);
-	    }
-	    int exitVal = process.waitFor();
-	    return exitVal;
+        	// String[] bashCommand = new String[]{
+         //        "/Users/fahad/anaconda/bin/conda", "init", ";",
+         //        "/Users/fahad/anaconda/bin/conda", "activate", "deepwalk",";",
+         //        deepwalkPath,
+        	// 	"--format", "edgelist",
+         //        "--input", path+"/data/tmp.csv", 
+         //        "--output", path+"/data/tmp.embeddings"
+        	// };
+
+            // String [] bashCommand = new String[]{
+            //     "source", path+"/data/script.sh",
+            // };
+
+            String [] bashCommand = new String[]{
+                // "/bin/bash", "-c",
+                // ". /Users/fahad/anaconda/bin/activate",
+                // "deepwalk;",
+                condaPath+"/envs/deepwalk/bin/deepwalk",
+                "--format", "edgelist",
+                "--input", path+"/data/tmp.csv", 
+                "--output", path+"/data/tmp.embeddings"
+            };
+
+            return callBashCommand(bashCommand);
+        }
+        catch(Exception e){
+            StringWriter writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter( writer );
+            e.printStackTrace( printWriter );
+            printWriter.flush();
+
+            String stackTrace = writer.toString();
+            log.info(e.toString());
+            log.info(e.getMessage());
+            log.info(stackTrace);
+
+            throw e;
+        }
+	    
 	}
 
 
@@ -128,13 +165,14 @@ public class DeepWalk
 	@Description("Calls deepwalk from bash and writes back embeddings as node properties")
     public void deepWalk() throws IOException, FileNotFoundException, InterruptedException, KernelException{
 
-        String deepwalkPath = System.getenv("DEEPWALK");
+        // String deepwalkPath = System.getenv("DEEPWALK");
+        String condaPath = System.getenv("CONDA");
         String dir = System.getenv("NEO4J_HOME");
-        log.info("Deepwalk - Path: "+deepwalkPath);
+        log.info("Deepwalk - Path: "+condaPath);
         log.info("Deepwalk - Dir: "+dir);
 
 		exportData(dir);
-		learnEmbeddings(dir, deepwalkPath);
+		learnEmbeddings(dir, condaPath);
 		loadEmbeddings(dir);
 	}
 
